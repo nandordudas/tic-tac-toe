@@ -1,0 +1,27 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: [v*]
+
+concurrency:
+  cancel-in-progress: true
+  group: release-${{ github.workflow_ref || github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-and-cache
+
+      - name: Create release
+        run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
