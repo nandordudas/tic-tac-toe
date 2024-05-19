@@ -1,11 +1,11 @@
 name: Setup and cache
-description: Setup for node and pnpm
+description: Setup for Node.js and pnpm
 
 inputs:
   node-version:
-    required: false
-    description: Node.js version for setup-node
     default: 20.x
+    description: Node.js version for setup-node
+    required: false
 
 runs:
   using: composite
