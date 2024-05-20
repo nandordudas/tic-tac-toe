@@ -16,9 +16,12 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
-  modules: [
-    '@nuxt/eslint',
-  ],
+  modules: ['@nuxt/eslint', '@vueuse/nuxt'],
+  nitro: {
+    experimental: {
+      websocket: true,
+    },
+  },
   eslint: {
     config: {
       standalone: false,

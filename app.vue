@@ -2,7 +2,7 @@
 const isDev = import.meta.dev
 const faviconHref = isDev ? '/favicon-dev.svg' : '/favicon.svg'
 
-const logger = useLogger('app.vue')
+const logger = useLogger('app')
 const { name, version } = useRuntimeConfig().public.app
 
 useHead({
