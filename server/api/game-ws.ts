@@ -43,12 +43,11 @@ export default defineWebSocketHandler({
     const client = clients.get(ws)
 
     if (client?.room) {
+      peer.unsubscribe(client.room.id)
       client.room.removePlayer(client)
 
       if (client.room.isEmpty)
         gameRooms.delete(client.room.id)
-
-      peer.unsubscribe(client.room.id)
     }
 
     clients.delete(ws)
@@ -173,20 +172,19 @@ class GameRoom {
   }
 
   makeMove(player: Client, x: number, y: number) {
-    if (this.currentPlayer === player && this.isValidMove(x, y)) {
-      const move: Move = {
-        coordinate: { x, y },
-        playerId: player.id,
-        timestamp: Date.now(),
-      }
+    if (this.currentPlayer !== player || !this.isValidMove(x, y))
+      return null
 
-      this.#moves.push(move)
-      this.#togglePlayer()
-
-      return move
+    const move: Move = {
+      coordinate: { x, y },
+      playerId: player.id,
+      timestamp: Date.now(),
     }
 
-    return null
+    this.#moves.push(move)
+    this.#togglePlayer()
+
+    return move
   }
 
   #togglePlayer() {
