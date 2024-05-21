@@ -1,9 +1,9 @@
 <script setup lang="ts">
+const logger = useLogger('pages::index')
+
 useHead({
   title: 'Home',
 })
-
-const logger = useLogger('pages::index')
 
 onMounted(() => {
   logger.info('mounted')
@@ -11,8 +11,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <article>
     <h1>home</h1>
-    <Game />
-  </div>
+
+    <Suspense>
+      <Game />
+    </Suspense>
+  </article>
 </template>

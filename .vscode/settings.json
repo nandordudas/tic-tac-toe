@@ -73,6 +73,7 @@
   ],
   "eslint.runtime": "node",
   "cSpell.words": [
-    "bumpp"
+    "bumpp",
+    "crossws"
   ]
 }

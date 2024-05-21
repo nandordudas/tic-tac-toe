@@ -7,11 +7,12 @@ const { name, version } = useRuntimeConfig().public.app
 
 useHead({
   link: [{ rel: 'icon', type: 'image/svg+xml', href: faviconHref }],
+  meta: [{ name: 'color-scheme', content: 'light dark' }],
   titleTemplate: title => isDev ? `${title} · ${name}@${version}` : `${title} · TicTacToe`,
 })
 
 onMounted(() => {
-  logger.ready('application is ready')
+  logger.info('mounted')
 })
 </script>
 
@@ -22,3 +23,13 @@ onMounted(() => {
     <NuxtPage />
   </NuxtLayout>
 </template>
+
+<style lang="postcss">
+.btn {
+  @apply rounded px-2 py-1;
+
+  &-primary {
+    @apply bg-teal-400 hover:bg-teal-600 dark:text-gray-800;
+  }
+}
+</style>
