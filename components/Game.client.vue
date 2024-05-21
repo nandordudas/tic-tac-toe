@@ -1,48 +1,84 @@
 <script setup lang="ts">
+import GameWorker from '~/utils/game.worker?worker'
+
 defineOptions({
   inheritAttrs: false,
 })
 
-interface Message {
-  type: string
-  coordinates?: { x: number, y: number }
-  roomId?: string
-  playerId?: string
-}
+const props = defineProps<{
+  gameId?: string
+}>()
 
-const logger = useLogger('components::Game')
-const { status, data, send } = useCustomWebSocket<Message>()!
-const roomId = ref<string | null>(null)
-const playerId = ref<string | null>(null)
+type Message =
+  | { type: 'status', status: 'OPEN' | 'CONNECTING' | 'CLOSED' }
+  | { type: 'data', data: { command: 'new-game', gameId: string } }
 
-onMounted(() => {
-  logger.info('mounted')
-  send({ type: 'join' })
+const logger = useLogger('[components/Game]')
+const { data, post } = useWebWorker(new GameWorker())
+const { start, finish } = useLoadingIndicator()
+
+const status = ref<'OPEN' | 'CONNECTING' | 'CLOSED'>('CLOSED')
+
+start()
+
+watch(status, (value) => {
+  if (value === 'CONNECTING')
+    start()
+  else
+    finish()
 })
 
-watch(data, (value) => {
-  logger.info('[ws] received', value)
+watch(data, async (value) => {
+  const data = safeParse<Message>(value)
 
-  if (value?.type === 'joined') {
-    roomId.value = value.roomId
-    playerId.value = value.playerId
+  switch (data?.type) {
+    case 'status': {
+      status.value = data.status
+      break
+    }
 
-    send({ type: 'move', coordinates: { x: 0, y: 0 }, roomId: value.roomId, playerId: value.playerId })
+    case 'data': {
+      logger.info('new-game', data)
+
+      if (data.data.command === 'new-game')
+        await navigateTo(`/game/${data.data.gameId}`)
+
+      break
+    }
+
+    default:
+      logger.info('unknown message', data)
+      break
   }
 })
 
-function onClick() {
-  const x = Math.floor(Math.random() * 3)
-  const y = Math.floor(Math.random() * 3)
-  // @ts-expect-error asd
-  send({ type: 'move', coordinates: { x, y }, roomId: roomId.value, playerId: playerId.value })
+onMounted(() => {
+  logger.info('mounted')
+})
+
+if (props.gameId)
+  post({ command: 'join', gameId: props.gameId })
+
+function onClickNewGame() {
+  logger.info('onClickNewGame')
+  post({ command: 'new-game' })
 }
 </script>
 
 <template>
-  <div @click="onClick">
-    home
+  <main>
+    <div v-if="status === 'CONNECTING'">
+      Connecting...
+    </div>
 
-    {{ status }} {{ data }}
-  </div>
+    <div v-else-if="status === 'CLOSED'">
+      Disconnected
+    </div>
+
+    <div v-else>
+      <button v-if="!props.gameId" type="button" class="btn btn-primary" @click="onClickNewGame">
+        New Game
+      </button>
+    </div>
+  </main>
 </template>
